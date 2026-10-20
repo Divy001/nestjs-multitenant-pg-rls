@@ -1,0 +1,32 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Tenant {
+  id        String          @id @default(uuid())
+  name      String
+  slug      String          @unique
+  createdAt DateTime        @default(now()) @map("created_at")
+  records   PatientRecord[]
+
+  @@map("tenants")
+}
+
+model PatientRecord {
+  id          String   @id @default(uuid())
+  tenantId    String   @map("tenant_id")
+  patientName String   @map("patient_name")
+  diagnosis   String
+  treatment   String
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@map("patient_records")
+}
